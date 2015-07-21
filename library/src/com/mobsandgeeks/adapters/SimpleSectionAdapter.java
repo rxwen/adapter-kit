@@ -74,6 +74,7 @@ public class SimpleSectionAdapter<T> extends BaseAdapter {
         } else if(!isTextView(context, sectionHeaderLayoutId, sectionTitleTextViewId)) {
             throw new IllegalArgumentException("sectionTitleTextViewId should be a TextView.");
         }
+        Log.d(TAG, String.format("Constructor"));
 
         this.mContext = context;
         this.mListAdapter = listAdapter;
@@ -81,6 +82,13 @@ public class SimpleSectionAdapter<T> extends BaseAdapter {
         this.mSectionTitleTextViewId = sectionTitleTextViewId;
         this.mSectionizer = sectionizer;
         this.mSections = new LinkedHashMap<String, Integer>();
+
+        mListAdapter.registerDataSetObserver(new android.database.DataSetObserver() {
+            @Override
+            public void onChanged() {
+                propogateDatasetChanged();
+            }
+        });
 
         // Find sections
         findSections();
@@ -166,11 +174,15 @@ public class SimpleSectionAdapter<T> extends BaseAdapter {
         return mListAdapter.getItemId(getIndexForPosition(position));
     }
 
+    private void propogateDatasetChanged() {
+        findSections();
+        super.notifyDataSetChanged();
+    }
+
     @Override
     public void notifyDataSetChanged() {
         mListAdapter.notifyDataSetChanged();
-        findSections();
-        super.notifyDataSetChanged();
+        propogateDatasetChanged();
     }
 
     /**
